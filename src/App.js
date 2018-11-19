@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import './App.css';
 import firebase from 'firebase';
-import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+
+// Views
+import Login from './components/Login/Login';
+import Header from './components/Header/Header';
 
 firebase.initializeApp({
   apiKey: "AIzaSyCBW-_DxMfWCoklmi3fQ13x9MQN1WSIGvE",
@@ -12,52 +15,37 @@ firebase.initializeApp({
   messagingSenderId: "986242627932"
 })
 
-class App extends Component {
-  state = {isSignedIn: false}
-  uiConfig = {
-    signInflow: "popup",
-    signInOptions: [
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-      firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-      firebase.auth.EmailAuthProvider.PROVIDER_ID
-    ],
-    callbacks: {
-      sigInSuccess: () => false
-    }
+export default class App extends Component {
+  state = {
+    isSignedIn: false,
+    menuActive: false
+  }
+
+  menuHandler = () => {
+    this.state.menuActive ? this.setState({ menuActive: false }) : this.setState({ menuActive: true });
   }
 
   componentDidMount = () => {
     firebase.auth().onAuthStateChanged(user => {
-      this.setState({isSignedIn: !!user})
+      this.setState({ isSignedIn: !!user })
     })
   }
 
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          {this.state.isSignedIn ?(
-            <div>
-              <h3>Welcome {firebase.auth().currentUser.displayName}, you are signed in!</h3>
-              <div>
-                <img
-                  className="profile-photo"
-                  alt="profile"
-                  src={firebase.auth().currentUser.photoURL}
-                />
-              </div>
-              <button onClick = {() => firebase.auth().signOut()}>Sign out</button>
-            </div>
-          ) : (
-            <StyledFirebaseAuth
-              uiConfig = {this.uiConfig}
-              firebaseAuth = {firebase.auth()}
+        {this.state.isSignedIn ? (   // Si el usuario no esta logueado muestra la view de Login
+          <Header firebaseAuth={firebase.auth()} menuActive={this.state.menuActive} menuHandler={this.menuHandler} />    // Home view
+        ) : (
+            <Login    // Login view
+              firebaseAuth={firebase.auth()}
+              GoogleAuthProvider={firebase.auth.GoogleAuthProvider.PROVIDER_ID}
+              FacebookAuthProvider={firebase.auth.FacebookAuthProvider.PROVIDER_ID}
+              EmailAuthProvider={firebase.auth.EmailAuthProvider.PROVIDER_ID}
             />
           )}
-        </header>
       </div>
     );
   }
 }
 
-export default App;
